@@ -11,36 +11,34 @@ import org.springframework.web.client.RestTemplate;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Random;
 
-@SpringBootApplication
-@RestController
 
-//@RequestMapping
+@RestController
 public class HealthCheckController {
     @Value("${healthcheck.target}")
     private String target;
+
     @GetMapping("/health")
     public HealthResponse getHealth(HttpServletResponse response) {
-
-        final String uri= target;
+        String[] targetArr = target.split(";");
+        final String uri = targetArr[0];
+        final String name = targetArr[1];
+        int httpStatus = -1;
+        String cause = null;
         RestTemplate restTemplate = new RestTemplate();
         boolean isHealthy;
         try {
             ResponseEntity<String> result = restTemplate.getForEntity(uri, String.class);
             isHealthy = result.getStatusCode().is2xxSuccessful();
-        }
-        catch(Exception e){
+            httpStatus = result.getStatusCode().value();
+        } catch (Exception e) {
             isHealthy = false;
+            cause = e.getMessage();
         }
-
-
         if (!isHealthy) {
             response.setStatus(503);
-            System.out.println("ERROR: 503");
-            return new HealthResponse("BAD");
         } else {
             response.setStatus(200);
-            System.out.println("OK: 200");
-            return new HealthResponse("GOOD");
         }
+        return new HealthResponse(name, isHealthy, httpStatus, cause);
     }
 }
