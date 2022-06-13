@@ -6,14 +6,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
 public class HealthCheckController {
     @Value("${healthcheck.target}")
     private String target;
-    @Value("${server.port}")
-    private Integer port;
+
     private final WebCallsService webCallsService;
 
     public HealthCheckController(WebCallsService webCallsService) {
@@ -21,14 +22,33 @@ public class HealthCheckController {
     }
 
     @GetMapping("/health")
-    public HealthResponse getHealth(HttpServletResponse response) {
-        System.out.println(">>>>>>>>>>>>" + port);
+    public List<HealthResponse> getHealth(HttpServletResponse response) {
+        boolean isHealthy = true;
+        String[] listOfTargets = target.split(",");
+        List<HealthResponse> listHealthResponse = new ArrayList<>();
+        for (int i = 0; i < listOfTargets.length; i++) {
+            listHealthResponse.add(getHealthResponse(listOfTargets[i]));
+        }
+        for (int i = 0; i < listHealthResponse.size(); i++) {
+            if (listHealthResponse.get(i).isHealthy() == false) {
+                isHealthy = false;
+                break;
+            }
+        }
+        if (!isHealthy) {
+            response.setStatus(503);
+        } else {
+            response.setStatus(200);
+        }
+        return listHealthResponse;
+    }
+
+    public HealthResponse getHealthResponse(String target) {
         String[] targetArr = target.split(";");
         final String uri = targetArr[0];
         final String name = targetArr[1];
         int httpStatus = -1;
         String cause = null;
-//        RestTemplate restTemplate = new RestTemplate();
         boolean isHealthy;
         try {
             ResponseEntity<String> result = webCallsService.call(uri);
@@ -38,11 +58,6 @@ public class HealthCheckController {
         } catch (Exception e) {
             isHealthy = false;
             cause = e.getMessage();
-        }
-        if (!isHealthy) {
-            response.setStatus(503);
-        } else {
-            response.setStatus(200);
         }
         return new HealthResponse(name, isHealthy, httpStatus, cause);
     }

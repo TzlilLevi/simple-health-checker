@@ -1,7 +1,5 @@
 package com.tzlillevi.simplehealthchecker;
 
-import org.springframework.http.ResponseEntity;
-
 public class HealthResponse {
     private String name;
     private boolean healthy;
