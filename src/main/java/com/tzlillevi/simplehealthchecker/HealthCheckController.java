@@ -15,6 +15,9 @@ public class HealthCheckController {
     @Value("${healthcheck.target}")
     private String target;
 
+    @Value("${healthcheck.time}")
+    private int time;
+
     private final WebCallsService webCallsService;
 
     public HealthCheckController(WebCallsService webCallsService) {
@@ -27,10 +30,11 @@ public class HealthCheckController {
         String[] listOfTargets = target.split(",");
         List<HealthResponse> listHealthResponse = new ArrayList<>();
         for (int i = 0; i < listOfTargets.length; i++) {
-            listHealthResponse.add(getHealthResponse(listOfTargets[i]));
+            HealthResponse targetResponse = getHealthResponse(listOfTargets[i]);
+            listHealthResponse.add(targetResponse);
         }
         for (int i = 0; i < listHealthResponse.size(); i++) {
-            if (listHealthResponse.get(i).isHealthy() == false) {
+            if (!listHealthResponse.get(i).isHealthy()) {
                 isHealthy = false;
                 break;
             }
@@ -52,7 +56,6 @@ public class HealthCheckController {
         boolean isHealthy;
         try {
             ResponseEntity<String> result = webCallsService.call(uri);
-//            ResponseEntity<String> result = restTemplate.getForEntity(uri, String.class);
             isHealthy = result.getStatusCode().is2xxSuccessful();
             httpStatus = result.getStatusCode().value();
         } catch (Exception e) {

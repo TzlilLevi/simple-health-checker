@@ -1,35 +1,34 @@
 package com.tzlillevi.simplehealthchecker;
 
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 
 @Service
 public class WebCallsService {
-     RestTemplate restTemplate = new RestTemplate(getClientHttpRequestFactory());
-    private SimpleClientHttpRequestFactory getClientHttpRequestFactory()
-    {
+    final RestTemplate restTemplate;
+
+    public WebCallsService(@Value("${healthcheck.time}") int time) {
+        restTemplate = new RestTemplate(getClientHttpRequestFactory(time));
+    }
+
+    private SimpleClientHttpRequestFactory getClientHttpRequestFactory(int time) {
         SimpleClientHttpRequestFactory clientHttpRequestFactory
                 = new SimpleClientHttpRequestFactory();
         //Connect timeout
-        clientHttpRequestFactory.setConnectTimeout(5000);
+        clientHttpRequestFactory.setConnectTimeout(time);
 
         //Read timeout
-        clientHttpRequestFactory.setReadTimeout(5000);
+        clientHttpRequestFactory.setReadTimeout(time);
         return clientHttpRequestFactory;
     }
 
     public ResponseEntity<String> call(String uri) {
         return restTemplate.getForEntity(uri, String.class);
     }
-
 
 }
