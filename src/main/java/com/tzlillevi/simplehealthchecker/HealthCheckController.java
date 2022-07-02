@@ -15,9 +15,6 @@ public class HealthCheckController {
     @Value("${healthcheck.target}")
     private String target;
 
-    @Value("${healthcheck.time}")
-    private int time;
-
     private final WebCallsService webCallsService;
 
     public HealthCheckController(WebCallsService webCallsService) {
