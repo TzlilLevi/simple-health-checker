@@ -13,6 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,7 +32,7 @@ public class SimpleHealthCheckerApplicationTests {
 
 	@Test
 	public void getHealth_success()throws Exception{
-		var targetResponse = ResponseEntity.status(200).body("");
+		var targetResponse = CompletableFuture.completedFuture(ResponseEntity.status(200).body(""));
 		Mockito.when(webCallsService.call(anyString())).thenReturn(targetResponse);
 
 		mockMvc.perform(MockMvcRequestBuilders
@@ -41,7 +43,7 @@ public class SimpleHealthCheckerApplicationTests {
 
 	@Test
 	public void getHealth_allFailed()throws Exception{
-		var targetResponse = ResponseEntity.status(500).body("");
+		var targetResponse = CompletableFuture.completedFuture(ResponseEntity.status(500).body(""));
 		Mockito.when(webCallsService.call(anyString())).thenReturn(targetResponse);
 
 		mockMvc.perform(MockMvcRequestBuilders
@@ -52,8 +54,10 @@ public class SimpleHealthCheckerApplicationTests {
 
 	@Test
 	public void getHealth_onlyOneFailed()throws Exception{
-		var targetResponse1 = ResponseEntity.status(500).body("");
-		var targetResponse2 = ResponseEntity.status(200).body("");
+
+
+		var targetResponse1 = CompletableFuture.completedFuture(ResponseEntity.status(500).body(""));
+		var targetResponse2 = CompletableFuture.completedFuture(ResponseEntity.status(200).body(""));
 
 		Mockito.when(webCallsService.call("url1")).thenReturn(targetResponse1);
 		Mockito.when(webCallsService.call("url2")).thenReturn(targetResponse2);

@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 
 @RestController
@@ -24,12 +27,25 @@ public class HealthCheckController {
     @GetMapping("/health")
     public List<HealthResponse> getHealth(HttpServletResponse response) {
         boolean isHealthy = true;
-        String[] listOfTargets = target.split(",");
+        String[] targetStrings = target.split(",");
         List<HealthResponse> listHealthResponse = new ArrayList<>();
-        for (int i = 0; i < listOfTargets.length; i++) {
-            HealthResponse targetResponse = getHealthResponse(listOfTargets[i]);
-            listHealthResponse.add(targetResponse);
+        Map<String, Future<ResponseEntity<String>>> results =new HashMap<>();
+
+        for (int i = 0; i < targetStrings.length; i++) {
+            String[] targetArr = targetStrings[i].split(";");
+            final String uri = targetArr[0];
+            String name = targetArr[1];
+            Future<ResponseEntity<String>>result = callHealthCheckAsync(uri);
+            if(!(result==null)){
+                results.put(name,result);
+            }
         }
+
+        for(var result : results.entrySet()){
+            HealthResponse resultOfHealthResponse = getHealthResponse(result.getKey(),result.getValue());
+            listHealthResponse.add(resultOfHealthResponse);
+        }
+
         for (int i = 0; i < listHealthResponse.size(); i++) {
             if (!listHealthResponse.get(i).isHealthy()) {
                 isHealthy = false;
@@ -44,17 +60,17 @@ public class HealthCheckController {
         return listHealthResponse;
     }
 
-    public HealthResponse getHealthResponse(String target) {
-        String[] targetArr = target.split(";");
-        final String uri = targetArr[0];
-        final String name = targetArr[1];
+    public Future<ResponseEntity<String>> callHealthCheckAsync(String uri) {
+        return webCallsService.call(uri);
+    }
+
+    public HealthResponse getHealthResponse(String name, Future<ResponseEntity<String>> result) {
         int httpStatus = -1;
         String cause = null;
         boolean isHealthy;
         try {
-            ResponseEntity<String> result = webCallsService.call(uri);
-            isHealthy = result.getStatusCode().is2xxSuccessful();
-            httpStatus = result.getStatusCode().value();
+            isHealthy = result.get().getStatusCode().is2xxSuccessful();
+            httpStatus = result.get().getStatusCode().value();
         } catch (Exception e) {
             isHealthy = false;
             cause = e.getMessage();
