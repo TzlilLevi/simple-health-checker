@@ -29,20 +29,20 @@ public class HealthCheckController {
         boolean isHealthy = true;
         String[] targetStrings = target.split(",");
         List<HealthResponse> listHealthResponse = new ArrayList<>();
-        Map<String, Future<ResponseEntity<String>>> results =new HashMap<>();
+        Map<String, Future<ResponseEntity<String>>> results = new HashMap<>();
 
         for (int i = 0; i < targetStrings.length; i++) {
             String[] targetArr = targetStrings[i].split(";");
             final String uri = targetArr[0];
             String name = targetArr[1];
-            Future<ResponseEntity<String>>result = callHealthCheckAsync(uri);
-            if(!(result==null)){
-                results.put(name,result);
+            Future<ResponseEntity<String>> result = callHealthCheckAsync(uri);
+            if (!(result == null)) {
+                results.put(name, result);
             }
         }
 
-        for(var result : results.entrySet()){
-            HealthResponse resultOfHealthResponse = getHealthResponse(result.getKey(),result.getValue());
+        for (var result : results.entrySet()) {
+            HealthResponse resultOfHealthResponse = getHealthResponse(result.getKey(), result.getValue());
             listHealthResponse.add(resultOfHealthResponse);
         }
 
