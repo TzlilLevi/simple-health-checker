@@ -3,11 +3,11 @@ A simple HTTP server that checks the health of multiple hosts and aggregates the
 
 ```mermaid
 graph TD
-    client
-    server
-    target1
-    target2
-    target3
+    client("💻 client")
+    server(simple-health-checker)
+    target1(target1)
+    target2(target2)
+    target3(target3)
     join((join))
 
     client --GET /health-->server
