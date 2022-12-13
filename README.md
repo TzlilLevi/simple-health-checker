@@ -3,7 +3,7 @@ A simple HTTP server that checks the health of multiple hosts and aggregates the
 
 ```mermaid
 graph TD
-    client("💻 client")
+    client("client 💻")
     server(simple-health-checker)
     target1(target1)
     target2(target2)
