@@ -1,7 +1,23 @@
 # 🩺 Simple Health Checker
 A simple HTTP server that checks the health of multiple hosts and aggregates the result.  
 
+```mermaid
+graph TD
+    client
+    server
+    target1
+    target2
+    target3
+    join((join))
 
+    client --GET /health-->server
+    server---join
+    join --GET--> target1
+    join --GET--> target2
+    join --GET--> target3
+
+    style join stroke-dasharray: 5 5
+```
 ## 🧰 Tools
 - Java 13
 - Maven 13.0.2
