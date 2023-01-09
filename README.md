@@ -20,11 +20,30 @@ graph TD
 ```
 ## 🧰 Tools
 - Java 13
-- Maven 13.0.2
+- Maven 3
 - Docker 
 
-## 📦 Installation (WIP)
-In the future a Docker image will be available.
+## 📦 Installation 
+From repository root, run the following command to build the image.
+```bash
+docker build -t <imageName> .
+```
+Run the following command to start the image on Docker.
+```bash
+docker run -d -p <hostPort>:<containerPort> <imageName>
+```
+- localhostPort - The port of the current host that is mapped to the container.
+- containerPort - The container port to which there is a mapping from host's port.
+- imageName - The name of the Docker image.
+
+Example:
+```bash
+docker run -d -p 8999:5555 healthchecker
+```
+You can check the access to the container as follows:
+```bash
+curl localhost:8999/health
+```
 
 ## ⚙ Configuration
 To use the app and test the servers you need to edit the `application.properties` file. 
